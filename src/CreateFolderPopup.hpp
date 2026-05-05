@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-class CreateFolderPopup : public geode::Popup<> {
+class CreateFolderPopup : public Popup {
 
 private:
 
@@ -8,7 +8,7 @@ private:
 
     TextInput* m_input = nullptr;
 
-    bool setup() override;
+    bool init() override;
 
     void onCreate(CCObject*);
 

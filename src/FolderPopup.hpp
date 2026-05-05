@@ -4,7 +4,7 @@
 #include "ItemNode.hpp"
 #include "LevelViewLayer.hpp"
 
-class FolderPopup : public geode::Popup<>, public ItemCellDelegate, public CreateFolderDelegate, public TextInputDelegate, public LevelViewLayerDelegate {
+class FolderPopup : public Popup, public ItemCellDelegate, public CreateFolderDelegate, public TextInputDelegate, public LevelViewLayerDelegate {
 
 private:
 
@@ -63,9 +63,9 @@ private:
     bool m_isMove = false;
     int m_movingId = 0;
 
-    bool setup() override;
+    bool init() override;
     void textChanged(CCTextInputNode*) override;
-    void keyDown(cocos2d::enumKeyCodes) override;
+    void keyDown(cocos2d::enumKeyCodes, double) override;
     void onClose(CCObject*) override;
 
     void updateTableView();

@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-class RenameFolderPopup : public geode::Popup<std::string, RenameFolderDelegate*> {
+class RenameFolderPopup : public Popup {
 
 private:
 
@@ -8,7 +8,7 @@ private:
 
     TextInput* m_input = nullptr;
 
-    bool setup(std::string, RenameFolderDelegate*) override;
+    bool init(std::string, RenameFolderDelegate*);
 
     void onCreate(CCObject*);
 

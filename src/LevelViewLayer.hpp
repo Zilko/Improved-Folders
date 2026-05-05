@@ -1,6 +1,6 @@
 #include "Includes.hpp"
 
-class ProgressBar : public CCNode {
+class NoobProgressBar : public CCNode {
 
 private:
 
@@ -16,7 +16,7 @@ private:
 
 public:
 
-    static ProgressBar* create(std::string);
+    static NoobProgressBar* create(std::string);
 
     void setBarColor(cocos2d::ccColor3B);
 

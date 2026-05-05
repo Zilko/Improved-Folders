@@ -8,7 +8,7 @@ FolderPopup* FolderPopup::create(SetFolderPopup* ogPopup, bool noElasticity) {
 	ret->m_ogPopup = ogPopup;
 	ret->m_noElasticity = noElasticity;
 
-    if (ret->initAnchored(370, 267)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -17,7 +17,7 @@ FolderPopup* FolderPopup::create(SetFolderPopup* ogPopup, bool noElasticity) {
     return nullptr;
 }
 
-void FolderPopup::onClose(CCObject*) {
+void FolderPopup::onClose(CCObject*) {	
 	setKeypadEnabled(false);
 	setTouchEnabled(false);
 	removeFromParentAndCleanup(true);
@@ -36,7 +36,9 @@ void FolderPopup::onClose(CCObject*) {
 	}
 }
 
-bool FolderPopup::setup() {
+bool FolderPopup::init() {
+	Popup::init(370, 267);
+
 	m_isInverted = Mod::get()->getSavedValue<bool>("sort-inverted");
 	m_isGrid = Mod::get()->getSavedValue<bool>("grid-enabled");
 
@@ -314,7 +316,7 @@ void FolderPopup::updatePath() {
 		children[i]->setOpacity(path[i] == '/' ? 105 : 165);
 }
 
-void FolderPopup::keyDown(cocos2d::enumKeyCodes key) {
+void FolderPopup::keyDown(cocos2d::enumKeyCodes key, double timestamp) {
 	if (key == cocos2d::enumKeyCodes::KEY_Escape)
 		return m_currentIndex < 0 ? onClose(nullptr) : onPrevious(nullptr);
 
@@ -322,7 +324,7 @@ void FolderPopup::keyDown(cocos2d::enumKeyCodes key) {
 
 	if (key == cocos2d::enumKeyCodes::KEY_E) return onNext(nullptr);
 
-	return FLAlertLayer::keyDown(key);
+	return FLAlertLayer::keyDown(key, timestamp);
 	
 }
 

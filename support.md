@@ -1,1 +1,1 @@
-Donete to me in my kofi [here](https://ko-fi.com/zilko)
+[commission](https://www.fiverr.com/zilkowo/make-you-a-geometry-dash-mod-of-your-design) me a simple mod

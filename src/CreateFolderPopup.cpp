@@ -5,7 +5,7 @@ CreateFolderPopup* CreateFolderPopup::create(CreateFolderDelegate* delegate) {
 
     ret->m_delegate = delegate;
 
-    if (ret->initAnchored(300, 135)) {
+    if (ret->init()) {
         ret->autorelease();
         return ret;
     }
@@ -14,7 +14,9 @@ CreateFolderPopup* CreateFolderPopup::create(CreateFolderDelegate* delegate) {
     return nullptr;
 }
 
-bool CreateFolderPopup::setup() {
+bool CreateFolderPopup::init() {
+    Popup::init(300, 135);
+
     setTitle("Create Folder");
 
     m_input = TextInput::create(170, "Name", "bigFont.fnt");

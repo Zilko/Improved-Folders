@@ -3,7 +3,7 @@
 RenameFolderPopup* RenameFolderPopup::create(std::string name, RenameFolderDelegate* delegate) {
     RenameFolderPopup* ret = new RenameFolderPopup();
 
-    if (ret->initAnchored(300, 135, name, delegate)) {
+    if (ret->init(name, delegate)) {
         ret->autorelease();
         return ret;
     }
@@ -12,7 +12,9 @@ RenameFolderPopup* RenameFolderPopup::create(std::string name, RenameFolderDeleg
     return nullptr;
 }
 
-bool RenameFolderPopup::setup(std::string name, RenameFolderDelegate* delegate) {
+bool RenameFolderPopup::init(std::string name, RenameFolderDelegate* delegate) {
+    Popup::init(300, 135);
+    
     setTitle("Rename Folder");
     
     m_delegate = delegate;

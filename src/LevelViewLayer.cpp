@@ -1,8 +1,8 @@
 #include "LevelViewLayer.hpp"
 #include "Utils.hpp"
 
-ProgressBar* ProgressBar::create(std::string title) {
-    ProgressBar* ret = new ProgressBar();
+NoobProgressBar* NoobProgressBar::create(std::string title) {
+    NoobProgressBar* ret = new NoobProgressBar();
 
     if (ret->init(title)) {
         ret->autorelease();
@@ -13,7 +13,7 @@ ProgressBar* ProgressBar::create(std::string title) {
     return nullptr;
 }
 
-bool ProgressBar::init(std::string title) {
+bool NoobProgressBar::init(std::string title) {
     if (!CCNode::init()) return false;
 
     m_percentLabel = CCLabelBMFont::create("100%", "bigFont.fnt");
@@ -63,11 +63,11 @@ bool ProgressBar::init(std::string title) {
     return true;
 }
 
-void ProgressBar::setBarColor(cocos2d::ccColor3B color) {
+void NoobProgressBar::setBarColor(cocos2d::ccColor3B color) {
     m_progressBar->setColor(color);
 };
 
-void ProgressBar::setBarProgress(float progress) {
+void NoobProgressBar::setBarProgress(float progress) {
     m_stencil->setScaleX(progress);
     m_percentLabel->setString((std::to_string(static_cast<int>(progress * 100.f)) + "%").c_str());
 }
@@ -122,7 +122,7 @@ bool LevelViewLayer::init() {
     addChild(lbl);
 
     if (!m_level->isPlatformer()) {
-        ProgressBar* bar = ProgressBar::create("Normal Mode");
+        NoobProgressBar* bar = NoobProgressBar::create("Normal Mode");
         bar->setScale(0.5f);
         bar->setBarColor({0, 255, 0});
         bar->setBarProgress(m_level->m_newNormalPercent2.value() / 100.f);
@@ -130,7 +130,7 @@ bool LevelViewLayer::init() {
 
         addChild(bar);
 
-        bar = ProgressBar::create("Practice Mode");
+        bar = NoobProgressBar::create("Practice Mode");
         bar->setScale(0.5f);
         bar->setBarColor({0, 255, 255});
         bar->setBarProgress(m_level->m_practicePercent / 100.f);
