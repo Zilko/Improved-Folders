@@ -120,7 +120,8 @@ bool ItemNode::init() {
 
     if (m_item.isMove && !m_isGrid && m_isLevel) btn->setPositionX(260);
 
-    if ((m_item.id == 0 && !m_isLevel) || (m_isLevel && m_item.level->m_levelFolder == 0)) {
+    // if ((m_item.id == 0 && !m_isLevel) || (m_isLevel && m_item.level->m_levelFolder == 0)) {
+    if (m_item.id == 0 && !m_isLevel) {
         btn->setCascadeOpacityEnabled(true);
         btn->setEnabled(false);
         btn->setOpacity(30);

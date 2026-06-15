@@ -103,8 +103,9 @@ void FolderPopup::onClose(CCObject*) {
 
 	if (doModify) {
 		m_ogPopup->m_value = m_value;
-		m_ogPopup->onClose(nullptr);
 	}
+
+	m_ogPopup->onClose(nullptr);
 
 	if (m_isMove && !Mod::get()->getSettingValue<bool>("disable-notification")) {
 		if (m_value == 0)
