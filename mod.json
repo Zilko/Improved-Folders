@@ -1,5 +1,5 @@
 {
-	"geode": "5.5.2",
+	"geode": "5.7.1",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
@@ -8,7 +8,7 @@
 	},
 	"id": "zilko.improved_folders",
 	"name": "Improved Folders",
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"developer": "Zilko",
 	"description": "Improves Folders.",
 	"tags": [
@@ -17,8 +17,17 @@
 		"offline",
 		"utility"
 	],
+	"resources": {
+		"sprites": [
+			"resources/*.png"
+		]
+	},
 	"links": {
-		"source": "https://github.com/ZiLko/Improved-Folders"
+		"source": "https://github.com/ZiLko/Improved-Folders",
+		"community": "https://discord.gg/w6yvdzVzBd"
+	},
+	"dependencies": {
+		"cvolton.level-id-api": ">=2.0.0"
 	},
 	"settings": {
 		"disable": {

@@ -42,7 +42,7 @@ bool ButtonMenu::ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) 
 }
 
 bool ItemNode::init() {
-    CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png", { 0, 0, 80, 80 });
+    CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png");
 	bg->setColor({0, 0, 0});
     bg->setOpacity(m_item.id == 0 && !m_isLevel ? 25 : 20);
     bg->setPosition({5, 0});
@@ -58,22 +58,17 @@ bool ItemNode::init() {
     addChild(menu);
 
     CCSprite* spr = CCSprite::createWithSpriteFrameName(m_isLevel ? "geode.loader/file-add.png" : "folderIcon_001.png");
-    spr->setScale((m_isGrid ? 0.7f : 0.5f) - (m_isLevel ? (m_isGrid ? 0.3f : 0.23f) : 0.f));
 
+    //  ignore
     if (m_isLevel) {
-        bg = CCScale9Sprite::create("square02b_001.png", { 0, 0, 80, 80 });
-        bg->setColor({234,234,234});
-        bg->setPosition(spr->getContentSize() / 2 - ccp(0, 3.5f));
-        bg->setContentSize({30, 29});
+        spr = CCSprite::create("vro.png"_spr);
+    }
 
-        spr->addChild(bg);
+    spr->setScale((m_isGrid ? 0.7f : 0.5f) - (m_isLevel ? (m_isGrid ? 1.17f : 0.9f) : 0.f));
 
-        CCSprite* spr2 = CCSprite::createWithSpriteFrameName("square_01_001.png");
-        spr2->setScale(0.75f);
-        spr2->setOpacity(158);
-        spr2->setPosition(spr->getContentSize() / 2 - ccp(0, 3.5f));
-
-        spr->addChild(spr2);
+    //  ignore
+    if (m_isLevel) {
+        spr->setScale(spr->getScale() * (m_isGrid ? -1.49f : -1.1f));
     }
 
     CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ItemNode::onSee));
@@ -222,13 +217,10 @@ void ItemNode::onDelete(CCObject*) {
         [this](auto, bool yes) {
             if (!yes) return;
             
-            if (m_isLevel && m_item.level)
-                m_item.level->m_levelFolder = 0;
-            else if (!m_isLevel)
+            if (!m_isLevel)
                 Utils::removeFolder(m_item.id, m_item.searchType);
 
             m_delegate->onItemDelete(m_item);
-        
         }
     );
 }

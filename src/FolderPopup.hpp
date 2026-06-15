@@ -61,7 +61,10 @@ private:
     GJGameLevel* m_moveLevel = nullptr;
     bool m_isMoving = false;
     bool m_isMove = false;
+    bool m_deletingItself = false;
+    bool m_resetAll = false;
     int m_movingId = 0;
+    int m_movingFrom = 0;
 
     bool init() override;
     void textChanged(CCTextInputNode*) override;

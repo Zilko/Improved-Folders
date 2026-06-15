@@ -50,7 +50,31 @@ CCSprite* Utils::createTogglerSprite(const char* iconName, bool selected, bool i
 }
 
 CCArrayExt<GJGameLevel*> Utils::getLevels(int folder, SearchType type) {
-	return CCArrayExt<GJGameLevel*>(type == SearchType::MyLevels ? LocalLevelManager::get()->getCreatedLevels(folder) : GameLevelManager::get()->getSavedLevels(false, folder));
+	auto ret = CCArrayExt<GJGameLevel*>(type == SearchType::MyLevels ? LocalLevelManager::get()->getCreatedLevels(folder) : GameLevelManager::get()->getSavedLevels(false, folder));
+	auto obj = Mod::get()->getSavedValue<matjson::Value>("levels");
+
+	if (obj.contains(numToString(folder))) {
+		for (const auto& v : obj[numToString(folder)]) {
+			int id = v.asInt().unwrapOr(0);
+			
+			if (id <= 0) {
+				continue;
+			}
+
+			if (auto level = GameLevelManager::get()->getSavedLevel(id)) {
+				ret.push_back(level);
+			} else {
+				for (auto level : CCArrayExt<GJGameLevel*>(LocalLevelManager::get()->m_localLevels)) {
+					if (EditorIDs::getID(level) == id) {
+						ret.push_back(level);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return ret;
 }
 
 CCArrayExt<GJGameLevel*> Utils::getAllLevels(SearchType type) {

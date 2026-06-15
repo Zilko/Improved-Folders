@@ -2,6 +2,8 @@
 
 using namespace geode::prelude;
 
+#include <cvolton.level-id-api/include/EditorIDs.hpp>
+
 const std::unordered_map<int, int> orbsForDifficulty = {
     {1, 0},
     {2, 50},

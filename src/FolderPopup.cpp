@@ -17,21 +17,99 @@ FolderPopup* FolderPopup::create(SetFolderPopup* ogPopup, bool noElasticity) {
     return nullptr;
 }
 
-void FolderPopup::onClose(CCObject*) {	
+void FolderPopup::onClose(CCObject*) {
 	setKeypadEnabled(false);
 	setTouchEnabled(false);
-	removeFromParentAndCleanup(true);
+	removeFromParent();
 
 	if (!m_ogPopup) return;
 	if (m_value == m_ogPopup->m_value) return m_ogPopup->onClose(nullptr);
 
-	m_ogPopup->m_value = m_value;
-	m_ogPopup->onClose(nullptr);
+	auto doModify = true;
+
+	if (m_moveLevel) {
+		if (m_deletingItself) {
+			auto folder = getCurrentFolder();
+
+			if (folder != m_moveLevel->m_levelFolder) {
+				doModify = false;
+
+				auto obj = Mod::get()->getSavedValue<matjson::Value>("levels");
+				auto id = EditorIDs::getID(m_moveLevel);
+				auto arr = obj[numToString(folder)];
+				auto newArr = matjson::Value::array();
+
+				for (const auto& v : arr) {
+					if (v.asInt().unwrapOr(id + 1) != id) {
+						newArr.push(v);
+					}
+				}
+
+				obj[numToString(folder)] = newArr;
+
+				Mod::get()->setSavedValue("levels", obj);
+			}
+		} else if (m_resetAll && m_value == 0) {
+			auto obj = Mod::get()->getSavedValue<matjson::Value>("levels");
+			auto id = EditorIDs::getID(m_moveLevel);
+
+			for (const auto& v : obj) {
+				auto key = v.getKey().value_or("");
+				
+				if (key.empty() || !v.isArray()) {
+					continue;
+				}
+
+				auto newArr = matjson::Value::array();
+
+				for (const auto& b : v) {
+					if (b.asInt().unwrapOr(id + 1) != id) {
+						newArr.push(b);
+					}
+				}
+				
+				obj[key] = newArr;
+			}
+			
+			Mod::get()->setSavedValue("levels", obj);
+		} else if (m_moveLevel->m_levelFolder != 0) {
+			doModify = false;
+
+			auto obj = Mod::get()->getSavedValue<matjson::Value>("levels");
+			auto id = EditorIDs::getID(m_moveLevel);
+			auto arr = obj[numToString(m_value)];
+
+			if (!arr.isArray()) {
+				arr = matjson::Value::array();
+			}
+
+			auto didContain = false;
+
+			for (const auto& v : arr) {
+				if (v.asInt().unwrapOr(id + 1) == id) {
+					didContain = true;
+					break;
+				}
+			}
+
+			if (!didContain) {
+				arr.push(EditorIDs::getID(m_moveLevel));
+				obj[numToString(m_value)] = arr;
+				Notification::create(fmt::format("Level moved to \"{}\"", Utils::getFolderName(m_value, m_searchType)))->show();
+				Mod::get()->setSavedValue("levels", obj);
+			}
+		}
+	}
+
+	if (doModify) {
+		m_ogPopup->m_value = m_value;
+		m_ogPopup->onClose(nullptr);
+	}
 
 	if (m_isMove && !Mod::get()->getSettingValue<bool>("disable-notification")) {
 		if (m_value == 0)
 			Notification::create("Level removed from folder.")->show();
-		else
+		else if (doModify)
 			Notification::create(fmt::format("Level moved to \"{}\"", Utils::getFolderName(m_value, m_searchType)))->show();
 	}
 }
@@ -234,11 +312,12 @@ void FolderPopup::onCancelMove(CCObject*) {
 void FolderPopup::onReset(CCObject*) {
 	geode::createQuickPopup(
 		"Warning",
-		"Are you sure you want to <cr>remove</c> this level from its folder?\n<cl>(You will still be able to see it from \"All levels\")</c>",
+		"Are you sure you want to <cr>remove</c> this level from its folder(s)?\n<cl>(You will still be able to see it from \"All levels\")</c>",
 		"No", "Yes",
 		[this](auto, bool yes) {
 			if (!yes) return;
 
+			m_resetAll = true;
 			m_value = 0;
 			onClose(nullptr);
 		}
@@ -419,14 +498,15 @@ void FolderPopup::updateButtons() {
 }
 
 void FolderPopup::updateList() {
-	if (m_list) m_list->removeFromParentAndCleanup(true);
-	if (m_scrollbar) m_scrollbar->removeFromParentAndCleanup(true);
+	if (m_list) m_list->removeFromParent();
+	if (m_scrollbar) m_scrollbar->removeFromParent();
 
 	m_list = nullptr;
 	m_scrollbar = nullptr;
 	m_contentLayer = nullptr;
 	m_movingNode = nullptr;
 
+	
 	Mod::get()->setSavedValue("sort-inverted", m_isInverted);
 	Mod::get()->setSavedValue("grid-enabled", m_isGrid);
 
@@ -547,7 +627,7 @@ void FolderPopup::onGridToggle(CCObject*) {
 
 void FolderPopup::onPrevious(CCObject*) {
 	if (m_viewingLevel && m_levelViewLayer) {
-		m_levelViewLayer->removeFromParentAndCleanup(true);
+		m_levelViewLayer->removeFromParent();
 
 		m_viewingLevel = nullptr;
 		m_levelViewLayer = nullptr;
@@ -566,7 +646,6 @@ void FolderPopup::onPrevious(CCObject*) {
 }
 
 void FolderPopup::onNext(CCObject*) {
-	log::debug("{} {}", m_currentIndex, m_currentPath.size());
 	if (m_viewedLevel && !m_viewingLevel && m_currentIndex == static_cast<int>(m_currentPath.size()) - 1)
 		return onLevelSee(m_viewedLevel);
 
@@ -584,7 +663,46 @@ void FolderPopup::onMove(CCObject*) {
 	if (!m_isMoving || m_movingId == 0) return;
 
 	if (m_movingItem.type == ItemType::Level) {
-		if (m_movingItem.level) m_movingItem.level->m_levelFolder = getCurrentFolder();
+		if (m_movingItem.level) {
+			if (m_movingFrom == m_movingItem.level->m_levelFolder) {
+				m_movingItem.level->m_levelFolder = getCurrentFolder();
+			} else {
+				auto obj = Mod::get()->getSavedValue<matjson::Value>("levels");
+				auto id = EditorIDs::getID(m_movingItem.level);
+				auto arr = obj[numToString(m_movingFrom)];
+				auto newArr = matjson::Value::array();
+
+				for (const auto& v : arr) {
+					if (v.asInt().unwrapOr(id + 1) != id) {
+						newArr.push(v);
+					}
+				}
+
+				obj[numToString(m_movingFrom)] = newArr;
+
+				auto arr2 = obj[numToString(getCurrentFolder())];
+
+				if (!arr2.isArray()) {
+					arr2 = matjson::Value::array();
+				}
+
+				auto didContain = false;
+
+				for (const auto& v : arr2) {
+					if (v.asInt().unwrapOr(id + 1) == id) {
+						didContain = true;
+						break;
+					}
+				}
+
+				if (!didContain) {
+					arr2.push(id);
+					obj[numToString(getCurrentFolder())] = arr2;
+				}
+
+				Mod::get()->setSavedValue("levels", obj);
+			}
+		}
 	} else
 		Utils::moveFolder(m_movingItem.id, m_currentIndex, m_currentPath, m_searchType);
 
@@ -643,8 +761,32 @@ void FolderPopup::onFolderCreate(std::string name) {
 
 void FolderPopup::onItemDelete(Item item) {
 	if (m_isMove && item.type == ItemType::Level && m_moveLevel == item.level) {
+		m_deletingItself = true;
 		m_value = 0;
 		return onClose(nullptr);
+	}
+
+	if (item.type == ItemType::Level && item.level) {
+		auto folder = getCurrentFolder();
+
+		if (folder != item.level->m_levelFolder) {
+			auto obj = Mod::get()->getSavedValue<matjson::Value>("levels");
+			auto id = EditorIDs::getID(item.level);
+			auto arr = obj[numToString(folder)];
+			auto newArr = matjson::Value::array();
+
+			for (const auto& v : arr) {
+				if (v.asInt().unwrapOr(id + 1) != id) {
+					newArr.push(v);
+				}
+			}
+
+			obj[numToString(folder)] = newArr;
+
+			Mod::get()->setSavedValue("levels", obj);
+		} else {
+			item.level->m_levelFolder = 0;
+		}
 	}
 
 	m_folderPositions.erase(getCurrentFolder());
@@ -678,6 +820,7 @@ void FolderPopup::onItemMove(CCNode* node) {
 	Item item = m_movingNode->m_item;
 
 	m_movingId = getItemId(item);
+	m_movingFrom = getCurrentFolder();
 
 	if (m_movingId == -1) {
 		m_movingNode = nullptr;
@@ -705,8 +848,8 @@ void FolderPopup::onLevelSee(GJGameLevel* level) {
 	m_levelViewLayer->setPosition(m_list->getPosition());
 	m_mainLayer->addChild(m_levelViewLayer, 1);
 
-	if (m_list) m_list->removeFromParentAndCleanup(true);
-	if (m_scrollbar) m_scrollbar->removeFromParentAndCleanup(true);
+	if (m_list) m_list->removeFromParent();
+	if (m_scrollbar) m_scrollbar->removeFromParent();
 
 	m_emptyLabel->setVisible(false);
 

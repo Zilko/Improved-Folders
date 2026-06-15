@@ -1,3 +1,8 @@
+# v1.0.3
+
+* Added support for levels to be in multiple folders at once
+* Fixed a visual bug
+
 # v1.0.2
 
 * wa port
