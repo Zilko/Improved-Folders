@@ -143,7 +143,7 @@ bool FolderPopup::init() {
 	setTitle(m_isMove ? "Move to Folder" : "Go to Folder");
     m_title->setPositionY(250);
 
-	CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png");
+	NineSlice* bg = NineSlice::create("square02b_001.png");
 	bg->setColor({0, 0, 0});
 	bg->setOpacity(90);
 	bg->setContentSize({ 513, 60 });
@@ -273,7 +273,7 @@ bool FolderPopup::init() {
 
 	m_buttonMenu->addChild(m_searchOff);
 
-	bg = CCScale9Sprite::create("square02b_001.png");
+	bg = NineSlice::create("square02b_001.png");
 	bg->setColor(ccc3(138, 77, 46));
 	bg->setContentSize({ 289, 153 });
     bg->setPosition((m_size - ccp(289, 153)) / 2.f);
@@ -427,15 +427,19 @@ ItemCell* FolderPopup::findMovingNode(ItemCell* cell) {
 }
 
 void FolderPopup::updateTableView() {
-	if (!m_tableView || !m_contentLayer || !m_scrollbar) return;
+	if (!m_tableView || !m_contentLayer) return;
+
 
 	float scale = m_mainLayer->getScale();
 	
 	if (scale >= 1.f) {
 		m_tableView->setContentSize(m_list->getContentSize() * scale);
 		m_contentLayer->setPosition(m_contentLayer->getPosition());
-		m_scrollbar->setScaleY(1.f / scale);
-		m_scrollbar->getChildByType<CCScale9Sprite>(1)->setScaleY(1.f / scale * 0.4f);
+
+		if (m_scrollbar) {
+			m_scrollbar->setScaleY(1.f / scale);
+			m_scrollbar->getChildByType<NineSlice>(1)->setScaleY(1.f / scale * 0.4f);
+		}
 	}
 
 	if (m_mainLayer->numberOfRunningActions() != 0)
@@ -447,8 +451,11 @@ void FolderPopup::updateTableView() {
 	else {
 		m_tableView->setContentSize(m_list->getContentSize());
 		m_contentLayer->setPosition(m_contentLayer->getPosition());
-		m_scrollbar->setScaleY(1);
-		m_scrollbar->getChildByType<CCScale9Sprite>(1)->setScaleY(0.4f);
+
+		if (m_scrollbar) {
+			m_scrollbar->setScaleY(1);
+			m_scrollbar->getChildByType<NineSlice>(1)->setScaleY(0.4f);
+		}
 	}
 }
 

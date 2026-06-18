@@ -1,3 +1,7 @@
+# v1.0.5
+
+* fixed crash
+
 # v1.0.4
 
 * fixed bug tgat mkaes the game unplayable
